@@ -15,7 +15,7 @@ import org.apache.hadoop.util.ToolRunner;
 /**
  * Quick and dirty Hadoop application to get started!
  */
-public class App extends Configured implements Tool {
+public class SherlockWordCount extends Configured implements Tool {
 
   @Override
   public int run(String[] args) throws Exception {
@@ -51,7 +51,7 @@ public class App extends Configured implements Tool {
   }
 
   public static void main(String[] args) throws Exception {
-    int exitCode = ToolRunner.run(new App(), args);
+    int exitCode = ToolRunner.run(new SherlockWordCount(), args);
     System.exit(exitCode);
   }
 
