@@ -1,4 +1,4 @@
-package org.kiji.cassandra;
+package org.kiji.wordcount;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
