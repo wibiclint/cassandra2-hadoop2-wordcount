@@ -20,7 +20,8 @@ public class App extends Configured implements Tool {
   @Override
   public int run(String[] args) throws Exception {
     if (args.length != 2) {
-      System.err.printf("Usage: %s <input> <output>\n", getClass().getSimpleName());
+      System.err.printf("Usage: hadoop jar <jar file> %s <input> <output>\n", getClass().getSimpleName());
+      System.err.println("(You don't need to indicate the main class because it is in the manifest.");
       ToolRunner.printGenericCommandUsage(System.err);
       return -1;
     }
