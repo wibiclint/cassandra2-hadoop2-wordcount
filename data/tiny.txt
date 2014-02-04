@@ -1,0 +1,7 @@
+This is just something to test out the Sherlock Holmes word counting example.
+
+Holmes Holmes Holmes
+
+Watson Watson
+
+Lestrade

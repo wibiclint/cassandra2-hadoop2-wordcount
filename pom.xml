@@ -29,7 +29,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>org.kiji.wordcount.SherlockWordCount</mainClass>
+                            <mainClass>org.kiji.wordcount.SherlockCharacterCounter</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

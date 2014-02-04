@@ -1,5 +1,6 @@
 .vagrant
-data
+data/*.txt
+!data/tiny.txt
 target
 tmp
 *.iml

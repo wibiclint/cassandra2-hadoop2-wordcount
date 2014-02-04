@@ -4,16 +4,12 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.Session;
 import com.google.common.base.Charsets;
-import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
-import org.apache.cassandra.thrift.Cassandra;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,36 +18,45 @@ import java.util.Map;
  *
  * Create the keyspace, create the database, initialize with some data!
  */
-public class Setup {
+public final class Setup {
   private static final Logger LOG = LoggerFactory.getLogger(Setup.class);
 
-  public void setupTables(
-      Session session,
-      Map<String, String> titlesToBooks) {
+  /** Create the keyspace for the application. */
+  private void createKeyspace(Session session) {
     // Create a keyspace, if it does not exist yet.
     session.execute(String.format(
         "CREATE KEYSPACE IF NOT EXISTS %s WITH REPLICATION = " +
-            "{'class': 'SimpleStrategy', 'replication_factor': 1 };",
-        CassandraStuff.KEYSPACE
+        "{'class': 'SimpleStrategy', 'replication_factor': 1 };",
+    SherlockStuff.KEYSPACE
     ));
 
-    session.execute("USE " + CassandraStuff.KEYSPACE);
+    session.execute("USE " + SherlockStuff.KEYSPACE);
+  }
+
+  /**
+   * Set up the table for the input side of this application.
+   * @param session C* session.
+   * @param titlesToBooks Map from titles of books (file names) to their content.
+   */
+  private void setupInputTable(
+      Session session,
+      Map<String, String> titlesToBooks) {
 
     // Create the table, if it does not exist yet.
     session.execute(String.format(
         "CREATE TABLE IF NOT EXISTS %s ( " +
             "%s text PRIMARY KEY, %s text); ",
-        CassandraStuff.BOOK_TABLE,
-        CassandraStuff.BOOK_COL_TITLE,
-        CassandraStuff.BOOK_COL_STORY
+        SherlockStuff.BOOK_TABLE,
+        SherlockStuff.BOOK_COL_TITLE,
+        SherlockStuff.BOOK_COL_STORY
     ));
 
     // Populate the table with some great works of literature!
     PreparedStatement preparedStatement = session.prepare(String.format(
         "INSERT INTO %s (%s, %s) VALUES (?, ?);",
-        CassandraStuff.BOOK_TABLE,
-        CassandraStuff.BOOK_COL_TITLE,
-        CassandraStuff.BOOK_COL_STORY
+        SherlockStuff.BOOK_TABLE,
+        SherlockStuff.BOOK_COL_TITLE,
+        SherlockStuff.BOOK_COL_STORY
     ));
 
     for (Map.Entry<String, String> bookAndContents : titlesToBooks.entrySet()) {
@@ -60,6 +65,21 @@ public class Setup {
       LOG.info("Inserting data for book " + bookTitle);
       session.execute(preparedStatement.bind(bookTitle, bookText));
     }
+  }
+
+  /**
+   * Set up the table for the output side of this application.
+   * @param session C* session.
+   */
+  private void setupOutputTable(Session session) {
+    // Create the table, if it does not exist yet.
+    session.execute(String.format(
+        "CREATE TABLE IF NOT EXISTS %s ( " +
+            "%s text PRIMARY KEY, %s int); ",
+        SherlockStuff.CHARACTER_TABLE,
+        SherlockStuff.CHARACTER_COL_NAME,
+        SherlockStuff.CHARACTER_COL_COUNT
+    ));
   }
 
   public void loadDataAndSetupTables(String bookFiles[]) {
@@ -84,7 +104,9 @@ public class Setup {
 
     Cluster cluster = Cluster.builder().addContactPoint("127.0.0.1").build();
     Session session = cluster.connect();
-    setupTables(session, titlesToBooks);
+    createKeyspace(session);
+    setupInputTable(session, titlesToBooks);
+    setupOutputTable(session);
     cluster.shutdown();
   }
 
